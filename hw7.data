@@ -1,0 +1,6 @@
+asses=80
+train=/mnt/beegfs/hzhang47/hw7/data/coco/trainvalno5k.txt
+valid=/mnt/beegfs/hzhang47/hw7/data/coco/5k.txt
+names=/mnt/beegfs/hzhang47/hw7/data/coco.names
+backup=backup/
+eval=coco

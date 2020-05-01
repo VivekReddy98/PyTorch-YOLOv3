@@ -33,6 +33,13 @@ def evaluate(model, path, iou_thres, conf_thres, nms_thres, img_size, batch_size
 
     labels = []
     sample_metrics = []  # List of tuples (TP, confs, pred)
+
+
+    total_inference_time = 0
+    total_data_loading_time = 0
+
+    start_data_load = time.time()
+
     for batch_i, (_, imgs, targets) in enumerate(tqdm.tqdm(dataloader, desc="Detecting objects")):
 
         # Extract labels
@@ -44,16 +51,23 @@ def evaluate(model, path, iou_thres, conf_thres, nms_thres, img_size, batch_size
         imgs = Variable(imgs.type(Tensor), requires_grad=False)
 
         with torch.no_grad():
+            start = time.time()
             outputs = model(imgs)
+            end = time.time()
+            total_inference_time += end-start
             outputs = non_max_suppression(outputs, conf_thres=conf_thres, nms_thres=nms_thres)
 
         sample_metrics += get_batch_statistics(outputs, targets, iou_threshold=iou_thres)
+
+    end_data_load = time.time()
+
+    total_data_loading_time = end_data_load-start_data_load - total_inference_time
 
     # Concatenate sample statistics
     true_positives, pred_scores, pred_labels = [np.concatenate(x, 0) for x in list(zip(*sample_metrics))]
     precision, recall, AP, f1, ap_class = ap_per_class(true_positives, pred_scores, pred_labels, labels)
 
-    return precision, recall, AP, f1, ap_class
+    return precision, recall, AP, f1, ap_class, total_inference_time, total_data_loading_time
 
 
 if __name__ == "__main__":
@@ -71,11 +85,20 @@ if __name__ == "__main__":
     opt = parser.parse_args()
     print(opt)
 
+    # if torch.cuda.is_available():
+    #     print("GPU is available")
+    # else:
+    #     print("GPU is not available")
+    #
+    # sys.exit()
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     data_config = parse_data_config(opt.data_config)
     valid_path = data_config["valid"]
     class_names = load_classes(data_config["names"])
+
+    total_testing_time_start = time.time()
 
     # Initiate model
     model = Darknet(opt.model_def).to(device)
@@ -88,7 +111,7 @@ if __name__ == "__main__":
 
     print("Compute mAP...")
 
-    precision, recall, AP, f1, ap_class = evaluate(
+    precision, recall, AP, f1, ap_class, total_inference_time, total_data_loading_time = evaluate(
         model,
         path=valid_path,
         iou_thres=opt.iou_thres,
@@ -98,8 +121,14 @@ if __name__ == "__main__":
         batch_size=8,
     )
 
+    total_testing_time_end = time.time()
+
     print("Average Precisions:")
     for i, c in enumerate(ap_class):
         print(f"+ Class '{c}' ({class_names[c]}) - AP: {AP[i]}")
 
     print(f"mAP: {AP.mean()}")
+
+    print("Total Data Loading  Time Taken {} secs".format(total_data_loading_time))
+    print("Total Inference Time Taken: {0} secs".format(total_inference_time))
+    print("Total Testing Time Taken: {0} secs".format(total_testing_time_end - total_testing_time_start))

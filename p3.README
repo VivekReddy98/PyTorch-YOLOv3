@@ -1,0 +1,108 @@
+Compute mAP...
+Average Precisions:
++ Class '0' (person) - AP: 0.6907157868140823
++ Class '1' (bicycle) - AP: 0.46869626369935824
++ Class '2' (car) - AP: 0.5847854090492266
++ Class '3' (motorbike) - AP: 0.6173425471546101
++ Class '4' (aeroplane) - AP: 0.7368216071089109
++ Class '5' (bus) - AP: 0.7521598809811552
++ Class '6' (train) - AP: 0.754366135549987
++ Class '7' (truck) - AP: 0.4188454158138422
++ Class '8' (boat) - AP: 0.4055367418456285
++ Class '9' (traffic light) - AP: 0.4443524890561703
++ Class '10' (fire hydrant) - AP: 0.7803236133317674
++ Class '11' (stop sign) - AP: 0.7203250980406222
++ Class '12' (parking meter) - AP: 0.5318708513711929
++ Class '13' (bench) - AP: 0.3334771229094851
++ Class '14' (bird) - AP: 0.4440375368595998
++ Class '15' (cat) - AP: 0.7303504067363646
++ Class '16' (dog) - AP: 0.7319887348116905
++ Class '17' (horse) - AP: 0.77512155236337
++ Class '18' (sheep) - AP: 0.5984678148325733
++ Class '19' (cow) - AP: 0.5233874581223704
++ Class '20' (elephant) - AP: 0.8563788399614207
++ Class '21' (bear) - AP: 0.7462024921293304
++ Class '22' (zebra) - AP: 0.7870783066051238
++ Class '23' (giraffe) - AP: 0.8227873134751092
++ Class '24' (backpack) - AP: 0.32451636624665287
++ Class '25' (umbrella) - AP: 0.5271238663832635
++ Class '26' (handbag) - AP: 0.2044640627724129
++ Class '27' (tie) - AP: 0.49596230043317846
++ Class '28' (suitcase) - AP: 0.569835653931444
++ Class '29' (frisbee) - AP: 0.6356266022474135
++ Class '30' (skis) - AP: 0.40624013441992135
++ Class '31' (snowboard) - AP: 0.4548600158139028
++ Class '32' (sports ball) - AP: 0.5431383703116072
++ Class '33' (kite) - AP: 0.4099711653381243
++ Class '34' (baseball bat) - AP: 0.5038339063455582
++ Class '35' (baseball glove) - AP: 0.47781969136825725
++ Class '36' (skateboard) - AP: 0.6849120730914782
++ Class '37' (surfboard) - AP: 0.6221252845246673
++ Class '38' (tennis racket) - AP: 0.6876460895876773
++ Class '39' (bottle) - AP: 0.4228582945038891
++ Class '40' (wine glass) - AP: 0.5107649160534952
++ Class '41' (cup) - AP: 0.4709000582747271
++ Class '42' (fork) - AP: 0.44107168135464947
++ Class '43' (knife) - AP: 0.28895113935553396
++ Class '44' (spoon) - AP: 0.21264460558898557
++ Class '45' (bowl) - AP: 0.4882936721018784
++ Class '46' (banana) - AP: 0.27481021398716976
++ Class '47' (apple) - AP: 0.17694573390321539
++ Class '48' (sandwich) - AP: 0.4595098054471395
++ Class '49' (orange) - AP: 0.2861568847973789
++ Class '50' (broccoli) - AP: 0.34978355087142343
++ Class '51' (carrot) - AP: 0.22371776472064184
++ Class '52' (hot dog) - AP: 0.3702692586995472
++ Class '53' (pizza) - AP: 0.5297757751733385
++ Class '54' (donut) - AP: 0.5068384767127795
++ Class '55' (cake) - AP: 0.476632708387989
++ Class '56' (chair) - AP: 0.39804491599539354
++ Class '57' (sofa) - AP: 0.5214086539073353
++ Class '58' (pottedplant) - AP: 0.4239738450760743
++ Class '59' (bed) - AP: 0.6338351737747959
++ Class '60' (diningtable) - AP: 0.41380124254667605
++ Class '61' (toilet) - AP: 0.7377284037968452
++ Class '62' (tvmonitor) - AP: 0.6991588571748895
++ Class '63' (laptop) - AP: 0.68712851664284
++ Class '64' (mouse) - AP: 0.7214480416511962
++ Class '65' (remote) - AP: 0.4789729416954784
++ Class '66' (keyboard) - AP: 0.6644829934265277
++ Class '67' (cell phone) - AP: 0.39743578548434444
++ Class '68' (microwave) - AP: 0.6423763095621656
++ Class '69' (oven) - AP: 0.48313299304876195
++ Class '70' (toaster) - AP: 0.16233766233766234
++ Class '71' (sink) - AP: 0.5075074098080213
++ Class '72' (refrigerator) - AP: 0.6862896780296917
++ Class '73' (book) - AP: 0.17111818793026445
++ Class '74' (clock) - AP: 0.6886459682881512
++ Class '75' (vase) - AP: 0.44155849501889566
++ Class '76' (scissors) - AP: 0.3437987832196098
++ Class '77' (teddy bear) - AP: 0.5859590979304399
++ Class '78' (hair drier) - AP: 0.11363636363636365
++ Class '79' (toothbrush) - AP: 0.2643722437438991
+mAP: 0.5145196513137332
+
+
+mAP: 0.5145196513137332
+Total Data Loading  Time Taken 733.7475018501282 secs
+Total Inference Time Taken: 70.93303751945496 secs
+Total Testing Time Taken: 821.8935627937317 secs
+
+
+Fri May  1 19:30:23 2020
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 410.78       Driver Version: 410.78       CUDA Version: 10.0     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  GeForce GTX 1080    Off  | 00000000:03:00.0 Off |                  N/A |
+| 27%   42C    P2    45W / 180W |   2777MiB /  8119MiB |      0%      Default |
++-------------------------------+----------------------+----------------------+
+
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID   Type   Process name                             Usage      |
+|=============================================================================|
+|    0     32247      C   python3                                     2767MiB |
++-----------------------------------------------------------------------------+
