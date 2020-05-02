@@ -1,0 +1,81 @@
++ Class '0' (person) - AP: 0.6986124420377989
++ Class '1' (bicycle) - AP: 0.4557189039917133
++ Class '2' (car) - AP: 0.5813186629904189
++ Class '3' (motorbike) - AP: 0.626495517793656
++ Class '4' (aeroplane) - AP: 0.7416894022189895
++ Class '5' (bus) - AP: 0.7697470463658939
++ Class '6' (train) - AP: 0.7830074097825838
++ Class '7' (truck) - AP: 0.42472701151424275
++ Class '8' (boat) - AP: 0.41432200379620776
++ Class '9' (traffic light) - AP: 0.48127627014665963
++ Class '10' (fire hydrant) - AP: 0.7984676560297145
++ Class '11' (stop sign) - AP: 0.7314373835265977
++ Class '12' (parking meter) - AP: 0.5403472452246767
++ Class '13' (bench) - AP: 0.3474038245397145
++ Class '14' (bird) - AP: 0.4516244908047299
++ Class '15' (cat) - AP: 0.7320648538726868
++ Class '16' (dog) - AP: 0.7050987626455991
++ Class '17' (horse) - AP: 0.7769842275831371
++ Class '18' (sheep) - AP: 0.5770146460949869
++ Class '19' (cow) - AP: 0.5448165441280695
++ Class '20' (elephant) - AP: 0.8532383563829125
++ Class '21' (bear) - AP: 0.6922148404476111
++ Class '22' (zebra) - AP: 0.7870769691158629
++ Class '23' (giraffe) - AP: 0.8538286833908816
++ Class '24' (backpack) - AP: 0.30605895290936075
++ Class '25' (umbrella) - AP: 0.5364368769100976
++ Class '26' (handbag) - AP: 0.19656978157002866
++ Class '27' (tie) - AP: 0.5016676692915207
++ Class '28' (suitcase) - AP: 0.569835653931444
++ Class '29' (frisbee) - AP: 0.6945065046854495
++ Class '30' (skis) - AP: 0.4026794117395863
++ Class '31' (snowboard) - AP: 0.4383054323359801
++ Class '32' (sports ball) - AP: 0.5398552128059116
++ Class '33' (kite) - AP: 0.42667195494550214
++ Class '34' (baseball bat) - AP: 0.5038339063455582
++ Class '35' (baseball glove) - AP: 0.4809219112690335
++ Class '36' (skateboard) - AP: 0.7034564268954213
++ Class '37' (surfboard) - AP: 0.6266190246186487
++ Class '38' (tennis racket) - AP: 0.6829597533715797
++ Class '39' (bottle) - AP: 0.43524272092928923
++ Class '40' (wine glass) - AP: 0.5205444127486581
++ Class '41' (cup) - AP: 0.48163964043612123
++ Class '42' (fork) - AP: 0.4527825568473829
++ Class '43' (knife) - AP: 0.288951366082318
++ Class '44' (spoon) - AP: 0.21365625205159072
++ Class '45' (bowl) - AP: 0.4993754034358339
++ Class '46' (banana) - AP: 0.33509409358737374
++ Class '47' (apple) - AP: 0.20925237538984104
++ Class '48' (sandwich) - AP: 0.47877753238400533
++ Class '49' (orange) - AP: 0.2759528652574984
++ Class '50' (broccoli) - AP: 0.36659313891875683
++ Class '51' (carrot) - AP: 0.22504545859346986
++ Class '52' (hot dog) - AP: 0.3947788122070579
++ Class '53' (pizza) - AP: 0.539633395110337
++ Class '54' (donut) - AP: 0.5068384767127795
++ Class '55' (cake) - AP: 0.476632708387989
++ Class '56' (chair) - AP: 0.417879334283937
++ Class '57' (sofa) - AP: 0.5298267719487805
++ Class '58' (pottedplant) - AP: 0.42928998004993824
++ Class '59' (bed) - AP: 0.6001483542002948
++ Class '60' (diningtable) - AP: 0.41973760646965097
++ Class '61' (toilet) - AP: 0.7597782758207163
++ Class '62' (tvmonitor) - AP: 0.7129639451676579
++ Class '63' (laptop) - AP: 0.6923545507774864
++ Class '64' (mouse) - AP: 0.7214480416511962
++ Class '65' (remote) - AP: 0.47995396487400976
++ Class '66' (keyboard) - AP: 0.666285433490228
++ Class '67' (cell phone) - AP: 0.39604291665521263
++ Class '68' (microwave) - AP: 0.6513813383527515
++ Class '69' (oven) - AP: 0.47123458245272865
++ Class '70' (toaster) - AP: 0.16233766233766234
++ Class '71' (sink) - AP: 0.5156319792713111
++ Class '72' (refrigerator) - AP: 0.6789637713049008
++ Class '73' (book) - AP: 0.17113660724381471
++ Class '74' (clock) - AP: 0.6829891045822087
++ Class '75' (vase) - AP: 0.5165806131083865
++ Class '76' (scissors) - AP: 0.3437987832196098
++ Class '77' (teddy bear) - AP: 0.6072569060092936
++ Class '78' (hair drier) - AP: 0.11363636363636365
++ Class '79' (toothbrush) - AP: 0.2643722437438991
+mAP: 0.5210591495972852
