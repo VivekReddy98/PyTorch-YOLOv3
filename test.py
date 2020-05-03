@@ -1,4 +1,9 @@
 #!/bin/python3
+'''
+sjoshi26 shashank joshi
+akwatra archit kwatra
+vkarri vivek reddy karri
+'''
 
 from __future__ import division
 
@@ -133,6 +138,8 @@ def splitData(list_path, rank, size):
 def evaluate(model, img_files, iou_thres, conf_thres, nms_thres, img_size, batch_size):
     model.eval()
 
+    # print(model)
+
     total_inference_time = 0
     total_data_loading_time = 0
 
@@ -140,7 +147,7 @@ def evaluate(model, img_files, iou_thres, conf_thres, nms_thres, img_size, batch
     # Get dataloader
     dataset = ListDatasetCustom(img_files, img_size=img_size, augment=False, multiscale=False)
     dataloader = torch.utils.data.DataLoader(
-        dataset, batch_size=batch_size, shuffle=False, num_workers=1, collate_fn=dataset.collate_fn
+        dataset, batch_size=batch_size, shuffle=False, num_workers=4, collate_fn=dataset.collate_fn
     )
 
     Tensor = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
@@ -234,7 +241,7 @@ if __name__ == "__main__":
         conf_thres=opt.conf_thres,
         nms_thres=opt.nms_thres,
         img_size=opt.img_size,
-        batch_size=8,
+        batch_size=opt.batch_size,
     )
 
     total_testing_time_end = time.time()
