@@ -26,9 +26,9 @@ from torchvision import transforms
 from torch.autograd import Variable
 import torch.optim as optim
 
+# Exactly the same as utils.ListDataset() class but it takes the input as a list than a path.
 class ListDatasetCustom(Dataset):
     def __init__(self, img_files, img_size=416, augment=True, multiscale=True, normalized_labels=True):
-        # with open(list_path, "r") as file:
         self.img_files = img_files
 
         self.label_files = [
@@ -120,6 +120,7 @@ class ListDatasetCustom(Dataset):
     def __len__(self):
         return len(self.img_files)
 
+# Fucntion to split the work among ranks
 def splitData(list_path, rank, size):
     with open(list_path, "r") as file:
         img_files = file.readlines()
@@ -127,18 +128,18 @@ def splitData(list_path, rank, size):
     numFiles = len(img_files)
     numfilesPRank = int(numFiles/size)
 
+    # Find Low and Max indices
     low = rank*numfilesPRank
     max = rank*numfilesPRank+numfilesPRank
 
     if(rank == size-1):
         max = max + numFiles%size
 
+    # Return those image files
     return img_files[low:max]
 
 def evaluate(model, img_files, iou_thres, conf_thres, nms_thres, img_size, batch_size):
     model.eval()
-
-    # print(model)
 
     total_inference_time = 0
     total_data_loading_time = 0
@@ -147,7 +148,7 @@ def evaluate(model, img_files, iou_thres, conf_thres, nms_thres, img_size, batch
     # Get dataloader
     dataset = ListDatasetCustom(img_files, img_size=img_size, augment=False, multiscale=False)
     dataloader = torch.utils.data.DataLoader(
-        dataset, batch_size=batch_size, shuffle=False, num_workers=4, collate_fn=dataset.collate_fn
+        dataset, batch_size=batch_size, shuffle=False, num_workers=1, collate_fn=dataset.collate_fn
     )
 
     Tensor = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
@@ -180,6 +181,7 @@ def evaluate(model, img_files, iou_thres, conf_thres, nms_thres, img_size, batch
 
     # Concatenate sample statistics
     true_positives, pred_scores, pred_labels = [np.concatenate(x, 0) for x in list(zip(*sample_metrics))]
+
     # precision, recall, AP, f1, ap_class = ap_per_class(true_positives, pred_scores, pred_labels, labels)
 
     return true_positives, pred_scores, pred_labels, labels, total_inference_time, total_data_loading_time
@@ -234,6 +236,7 @@ if __name__ == "__main__":
 
     print("Compute mAP...")
 
+    # Get the Local Results out
     true_positives_local, pred_scores_local, pred_labels_local, labels_local, total_inference_time, total_data_loading_time = evaluate(
         model,
         img_files=myfilenames,
@@ -250,16 +253,15 @@ if __name__ == "__main__":
     pred_scores_local = pred_scores_local.reshape((-1,1))
     pred_labels_local = pred_labels_local.reshape((-1,1))
 
-    # print(true_positives_local.shape, pred_scores_local.shape, pred_labels_local.shape, len(labels_local))
 
+    # Reshape, Concatenate and Cast Local Variables for Broadcasting.
     allMetricMatrix = np.concatenate((true_positives_local, pred_scores_local, pred_labels_local), axis=1)
     allMetricMatrix = allMetricMatrix.astype('float32')
-
-    # print(allMetricMatrix.shape, len(labels_local), rank, len(myfilenames))
 
 
     # -------------  Communicate all the locally found tensors to rank 0 ---------------------------------------
     if (rank == 1):
+        # Broascast Sizes of the Tensors, just so that rank 1 can allocate necessary sizes
         size_tensors = torch.FloatTensor([allMetricMatrix.shape[0], allMetricMatrix.shape[1], len(labels_local)]).cuda(device)
         torch.distributed.broadcast(size_tensors, rank)
 
@@ -272,6 +274,7 @@ if __name__ == "__main__":
         torch.distributed.broadcast(labels_send, rank)
 
     else:
+        # Recieve the Sizes of tensors to be recieved.
         recv_size_tensor = torch.FloatTensor([0., 0., 0.]).cuda(device)
         torch.distributed.reduce(recv_size_tensor, 0)
         recv_size_list = recv_size_tensor.tolist()
@@ -291,11 +294,10 @@ if __name__ == "__main__":
         allMatrix = np.concatenate((allMetricMatrix, allMetricMatrixNew), axis=0)
         labels = labels_local + labels_new
 
-        # print(allMatrix.shape, len(labels), rank)
-        print(np.sum(allMatrix[:,0]), np.sum(allMatrix[:,1]), np.sum(allMatrix[:,2]), sum(labels))
-
+        # Find AP and mAP
         precision, recall, AP, f1, ap_class = ap_per_class(allMatrix[:,0], allMatrix[:,1], allMatrix[:,2], labels)
 
+        # Print the results
         print("Average Precisions:")
         for i, c in enumerate(ap_class):
             print(f"+ Class '{c}' ({class_names[c]}) - AP: {AP[i]}")
@@ -303,9 +305,10 @@ if __name__ == "__main__":
         print(f"mAP: {AP.mean()}")
     # -------------  Communicate all the locally found tensors to rank 0 ---------------------------------------
 
+    # Barrier
     torch.distributed.barrier()
 
-    # print(rank, true_positives_local, pred_scores_local, pred_labels_local)
+    # Print the Time taken by both the ranks
     print("------------------Rank : {}----------------------".format(rank))
     print("Total Data Loading Time Taken {} secs".format(total_data_loading_time))
     print("Total Inference Time Taken: {0} secs".format(total_inference_time))

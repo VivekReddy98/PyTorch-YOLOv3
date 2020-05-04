@@ -4,97 +4,125 @@ akwatra archit kwatra
 vkarri vivek reddy karri
 */
 
+Q1) Does the testing job on a single GPU node reach the real-time processing speed (30 FPS)?
+
+    Workers = 4
+    Batch Size = 16
+    Num Frames = 5000
+    Inference Time = 64.218
+    Data Loading time = 682.801 (non max suppression was around 140 secs)
+
+    Under the assumption that processing speed = Num Frames / Data Loading time.
+    Because, Just the Inference time wont be sufficient to call it Real time processing, time considered in fetching the data into memory should also be considered.
+
+    Therefore FPS = 5000 / 682.801 = 7.322
+
+    If the Inference time + non_max_suppression is taken into account, Then FPS = 5000 / 204.218 = 24.5
+
+Q2) Based the break-down timing on testing, which part is the bottleneck?
+
+    Times-for Serial Data: (num_workers = 1, batch_size = 8)
+    Total Data Loading  Time Taken 692.2090117931366 secs
+    Total Inference Time Taken: 70.5061936378479 secs
+    Total Testing Time Taken: 779.8315935134888 secs
+
+    So, it is clear from the results that the Data Loading part is the bottleneck in the process.
+    This usually leads to a problem called "GPU Starvation", where the GPU waits for data nearly most of the time instead of doing useful work.
+
+    On careful observation, non_max_suppression() is also taking a good amount of time, which happens on the CPU end.
+
+    Note:
+    1) Inference time is the time taken for the forward pass on the input data summed up across all the samples. We've not include non-max suppression part.
+    2) Data Loading time is calculated by the inference time subtracted from total execution time for the evaluate function. Non-Max suppresion time is included in Data Loading part.
+
+Q3) Can you provide some ideas to speedup the most time consuming part?
+
+    1) Using Multi-Threading or Multi_processing to pre-fetch more batches of data into the memory, thus leading to fewer wasted cycles on GPU.
+       (This is essentially what num_workers would do, if we are not wrong).
+
+    2) Building Efficient Data Pipelines using Portable Data Formats specified by Libraries such as TF Records in case of Tensorflow.
+
+    3) Increasing batch_size would help in speeding up the testing though it might lead of Out of Memory errors, when it set too high.
+       So, a right tradeoff has to be found out in this regard.
+
+    4) Maybe use MPS where multiple processes could load data into GPU memory while, one process could compute the inference.
+
+    5) preferably save data to the local SSD or HDD instead of having global file system, since network contention could lead to bad timings.
+
+Q4) Describe the implementation details of how you calculate final result (AP and mAP) from result of each rank?
+
+    There are two functions, which are dealing with finding the metrics.
+
+    1) get_batch_statistics(): This founds out true_positives, predicted_labels and prediction_Confidence Scores per image output
+    2) ap_per_class(): This uses the information from these three arrays to find the Precision-Recall Curves, follwed by AP per class and mean AP.
+
+    In two-node case, i've splitted the Data set into half and then broadcasted the results or get_batch_statistics() to rank 0.
+    I've appended the results at rank 0 and then computed the AP and mean AP using ap_per_class.
+
+    Implementational Details:
+    We've Concatenated the arrays across the axis=1. Initially We've broadcasted the shapes of matrix and length of labels list.
+    Then we created a necessary tensor of the shapes as specified in the shape array broadcasted.
+
+    Then there are two broadcasts/reduce one for the concatenated matrix and one for labels arrays.
+
+    Then, we've appended the necesary arrays with correspoding arrays on the rank 0.
 
 
----------------------------------- One Node Execution ---------------------------------------
-Compute mAP...
-Average Precisions:
-+ Class '0' (person) - AP: 0.6907157868140823
-+ Class '1' (bicycle) - AP: 0.46869626369935824
-+ Class '2' (car) - AP: 0.5847854090492266
-+ Class '3' (motorbike) - AP: 0.6173425471546101
-+ Class '4' (aeroplane) - AP: 0.7368216071089109
-+ Class '5' (bus) - AP: 0.7521598809811552
-+ Class '6' (train) - AP: 0.754366135549987
-+ Class '7' (truck) - AP: 0.4188454158138422
-+ Class '8' (boat) - AP: 0.4055367418456285
-+ Class '9' (traffic light) - AP: 0.4443524890561703
-+ Class '10' (fire hydrant) - AP: 0.7803236133317674
-+ Class '11' (stop sign) - AP: 0.7203250980406222
-+ Class '12' (parking meter) - AP: 0.5318708513711929
-+ Class '13' (bench) - AP: 0.3334771229094851
-+ Class '14' (bird) - AP: 0.4440375368595998
-+ Class '15' (cat) - AP: 0.7303504067363646
-+ Class '16' (dog) - AP: 0.7319887348116905
-+ Class '17' (horse) - AP: 0.77512155236337
-+ Class '18' (sheep) - AP: 0.5984678148325733
-+ Class '19' (cow) - AP: 0.5233874581223704
-+ Class '20' (elephant) - AP: 0.8563788399614207
-+ Class '21' (bear) - AP: 0.7462024921293304
-+ Class '22' (zebra) - AP: 0.7870783066051238
-+ Class '23' (giraffe) - AP: 0.8227873134751092
-+ Class '24' (backpack) - AP: 0.32451636624665287
-+ Class '25' (umbrella) - AP: 0.5271238663832635
-+ Class '26' (handbag) - AP: 0.2044640627724129
-+ Class '27' (tie) - AP: 0.49596230043317846
-+ Class '28' (suitcase) - AP: 0.569835653931444
-+ Class '29' (frisbee) - AP: 0.6356266022474135
-+ Class '30' (skis) - AP: 0.40624013441992135
-+ Class '31' (snowboard) - AP: 0.4548600158139028
-+ Class '32' (sports ball) - AP: 0.5431383703116072
-+ Class '33' (kite) - AP: 0.4099711653381243
-+ Class '34' (baseball bat) - AP: 0.5038339063455582
-+ Class '35' (baseball glove) - AP: 0.47781969136825725
-+ Class '36' (skateboard) - AP: 0.6849120730914782
-+ Class '37' (surfboard) - AP: 0.6221252845246673
-+ Class '38' (tennis racket) - AP: 0.6876460895876773
-+ Class '39' (bottle) - AP: 0.4228582945038891
-+ Class '40' (wine glass) - AP: 0.5107649160534952
-+ Class '41' (cup) - AP: 0.4709000582747271
-+ Class '42' (fork) - AP: 0.44107168135464947
-+ Class '43' (knife) - AP: 0.28895113935553396
-+ Class '44' (spoon) - AP: 0.21264460558898557
-+ Class '45' (bowl) - AP: 0.4882936721018784
-+ Class '46' (banana) - AP: 0.27481021398716976
-+ Class '47' (apple) - AP: 0.17694573390321539
-+ Class '48' (sandwich) - AP: 0.4595098054471395
-+ Class '49' (orange) - AP: 0.2861568847973789
-+ Class '50' (broccoli) - AP: 0.34978355087142343
-+ Class '51' (carrot) - AP: 0.22371776472064184
-+ Class '52' (hot dog) - AP: 0.3702692586995472
-+ Class '53' (pizza) - AP: 0.5297757751733385
-+ Class '54' (donut) - AP: 0.5068384767127795
-+ Class '55' (cake) - AP: 0.476632708387989
-+ Class '56' (chair) - AP: 0.39804491599539354
-+ Class '57' (sofa) - AP: 0.5214086539073353
-+ Class '58' (pottedplant) - AP: 0.4239738450760743
-+ Class '59' (bed) - AP: 0.6338351737747959
-+ Class '60' (diningtable) - AP: 0.41380124254667605
-+ Class '61' (toilet) - AP: 0.7377284037968452
-+ Class '62' (tvmonitor) - AP: 0.6991588571748895
-+ Class '63' (laptop) - AP: 0.68712851664284
-+ Class '64' (mouse) - AP: 0.7214480416511962
-+ Class '65' (remote) - AP: 0.4789729416954784
-+ Class '66' (keyboard) - AP: 0.6644829934265277
-+ Class '67' (cell phone) - AP: 0.39743578548434444
-+ Class '68' (microwave) - AP: 0.6423763095621656
-+ Class '69' (oven) - AP: 0.48313299304876195
-+ Class '70' (toaster) - AP: 0.16233766233766234
-+ Class '71' (sink) - AP: 0.5075074098080213
-+ Class '72' (refrigerator) - AP: 0.6862896780296917
-+ Class '73' (book) - AP: 0.17111818793026445
-+ Class '74' (clock) - AP: 0.6886459682881512
-+ Class '75' (vase) - AP: 0.44155849501889566
-+ Class '76' (scissors) - AP: 0.3437987832196098
-+ Class '77' (teddy bear) - AP: 0.5859590979304399
-+ Class '78' (hair drier) - AP: 0.11363636363636365
-+ Class '79' (toothbrush) - AP: 0.2643722437438991
-mAP: 0.5145196513137332
+Q5) Does the testing job on two GPU nodes reach the real-time processing speed (30 FPS)?
+
+    Workers = 4
+    Batch Size = 16
+    Num Frames = 2500 Per Rank, 5000 in total
+    Inference Time = 33.1454
+    Data Loading time = 369.241 (non max suppression was around 79 secs)
+
+    Under the assumption that processing speed = Num Frames / Data Loading time.
+    Because, Just the Inference time wont be sufficient to call it Real time processing, time considered in fetching the data into memory should also be considered.
+
+    Therefore FPS = 5000 / 369.241 = 13.541 FPS
+
+    If Inference time + non_max_suppression is taken into account, Then FPS = 5000 / 113.1454 = 43 FPS.
+
+Q6) Does the data parallel testing on two GPU nodes perform better than the one node scenario? Why or why not?
+
+    Yeah it did perform well.
+
+      Mode        Batch_Size    workers    Data_Loading_time(s)     Inference_time(s)   Total_time(s)
+    Two-Node         16            4          369.241                   33.1454            424.532
+    One-Node         16            4          682.801                    64.218            764.5540
+
+    Two-Node          8            1          407.993                   35.5545            462.828
+    One-Node          8            1          692.209                    70.506            779.831
+
+    As it can be clerly seen from the Data Loading and Inference time data, the time was almost reduced to half because the problem size was made half essentially.
+    Though there was an extra time seen in Two-Node case that the Total Time - Data Loading - Inference was higher than that of one-node counterpart.
+
+    This is because of the network overhead added because of MPI communication happening.
+
+    Note:
+    1) For Two-Node case, maximum time is recorded.
+    2) Inference time is the time taken for the forward pass on the input data summed up across all the samples. We've not include non-max suppression part.
+    3) Data Loading time is calculated by the inference time subtracted from total execution time for the evaluate function.
+
+Q7) Does the tuning of dataloader help? Why or why not?
+
+      Mode        Batch_Size    workers    Data_Loading_time(s)     Inference_time(s)   Total_time(s)
+    Two-Node         16            4          369.241                   33.1454            424.532
+    Two-Node         16            2          396.309                   33.477             450.418
+
+    As expected, workers had some slight impact on Data Loading time, because workers load pre-fetch them in batches.
+    And was indeed slighly better in performance. num_workers = num_cores should ideally give better performance.
+
+      Mode        Batch_Size    workers    Data_Loading_time(s)     Inference_time(s)   Total_time(s)
+    Two-Node         16            4          369.241                   33.1454            424.532
+    Two-Node          8            4          374.589                   35.6063            431.418
+
+    Increasing batch size has proved to be slightly better, because the number of times we access disk would be lower and number of time, we invoke GPU for evaluation would also be low.
+    However, when Batch size was set to 32, there was out of memory error.
 
 
-Total Data Loading  Time Taken 733.7475018501282 secs
-Total Inference Time Taken: 70.93303751945496 secs
-Total Testing Time Taken: 821.8935627937317 secs
+    Other Parameters such as shuffle is only useful in training phase and is not for Speedup purposes.
+
 
 
 
@@ -115,115 +143,3 @@ Fri May  1 19:30:23 2020
 |=============================================================================|
 |    0     32247      C   python3                                     2767MiB |
 +-----------------------------------------------------------------------------+
-
----------------------------------- Multiple Node Execution ---------------------------------------
-
-Compute mAP...
-Detecting objects: 100%|██████████| 313/313 [03:12<00:00,  1.62it/s]
-Computing AP: 100%|██████████| 80/80 [00:01<00:00, 46.25it/s]
-------------------Rank : 1----------------------
-Total Data Loading Time Taken 159.24656438827515 secs
-Total Inference Time Taken: 33.740617752075195 secs
-Average Precisions:
-+ Class '0' (person) - AP: 0.6986124420377989
-+ Class '1' (bicycle) - AP: 0.4557189039917133
-+ Class '2' (car) - AP: 0.5813186629904189
-+ Class '3' (motorbike) - AP: 0.626495517793656
-+ Class '4' (aeroplane) - AP: 0.7416894022189895
-+ Class '5' (bus) - AP: 0.7697470463658939
-+ Class '6' (train) - AP: 0.7830074097825838
-+ Class '7' (truck) - AP: 0.42472701151424275
-+ Class '8' (boat) - AP: 0.41432200379620776
-+ Class '9' (traffic light) - AP: 0.48127627014665963
-+ Class '10' (fire hydrant) - AP: 0.7984676560297145
-+ Class '11' (stop sign) - AP: 0.7314373835265977
-+ Class '12' (parking meter) - AP: 0.5403472452246767
-+ Class '13' (bench) - AP: 0.3474038245397145
-+ Class '14' (bird) - AP: 0.4516244908047299
-+ Class '15' (cat) - AP: 0.7320648538726868
-+ Class '16' (dog) - AP: 0.7050987626455991
-+ Class '17' (horse) - AP: 0.7769842275831371
-+ Class '18' (sheep) - AP: 0.5770146460949869
-+ Class '19' (cow) - AP: 0.5448165441280695
-+ Class '20' (elephant) - AP: 0.8532383563829125
-+ Class '21' (bear) - AP: 0.6922148404476111
-+ Class '22' (zebra) - AP: 0.7870769691158629
-+ Class '23' (giraffe) - AP: 0.8538286833908816
-+ Class '24' (backpack) - AP: 0.30605895290936075
-+ Class '25' (umbrella) - AP: 0.5364368769100976
-+ Class '26' (handbag) - AP: 0.19656978157002866
-+ Class '27' (tie) - AP: 0.5016676692915207
-+ Class '28' (suitcase) - AP: 0.569835653931444
-+ Class '29' (frisbee) - AP: 0.6945065046854495
-+ Class '30' (skis) - AP: 0.4026794117395863
-+ Class '31' (snowboard) - AP: 0.4383054323359801
-+ Class '32' (sports ball) - AP: 0.5398552128059116
-+ Class '33' (kite) - AP: 0.42667195494550214
-+ Class '34' (baseball bat) - AP: 0.5038339063455582
-+ Class '35' (baseball glove) - AP: 0.4809219112690335
-+ Class '36' (skateboard) - AP: 0.7034564268954213
-+ Class '37' (surfboard) - AP: 0.6266190246186487
-+ Class '38' (tennis racket) - AP: 0.6829597533715797
-+ Class '39' (bottle) - AP: 0.43524272092928923
-+ Class '40' (wine glass) - AP: 0.5205444127486581
-+ Class '41' (cup) - AP: 0.48163964043612123
-+ Class '42' (fork) - AP: 0.4527825568473829
-+ Class '43' (knife) - AP: 0.288951366082318
-+ Class '44' (spoon) - AP: 0.21365625205159072
-+ Class '45' (bowl) - AP: 0.4993754034358339
-+ Class '46' (banana) - AP: 0.33509409358737374
-+ Class '47' (apple) - AP: 0.20925237538984104
-+ Class '48' (sandwich) - AP: 0.47877753238400533
-+ Class '49' (orange) - AP: 0.2759528652574984
-+ Class '50' (broccoli) - AP: 0.36659313891875683
-+ Class '51' (carrot) - AP: 0.22504545859346986
-+ Class '52' (hot dog) - AP: 0.3947788122070579
-+ Class '53' (pizza) - AP: 0.539633395110337
-+ Class '54' (donut) - AP: 0.5068384767127795
-+ Class '55' (cake) - AP: 0.476632708387989
-+ Class '56' (chair) - AP: 0.417879334283937
-+ Class '57' (sofa) - AP: 0.5298267719487805
-+ Class '58' (pottedplant) - AP: 0.42928998004993824
-+ Class '59' (bed) - AP: 0.6001483542002948
-+ Class '60' (diningtable) - AP: 0.41973760646965097
-+ Class '61' (toilet) - AP: 0.7597782758207163
-+ Class '62' (tvmonitor) - AP: 0.7129639451676579
-+ Class '63' (laptop) - AP: 0.6923545507774864
-+ Class '64' (mouse) - AP: 0.7214480416511962
-+ Class '65' (remote) - AP: 0.47995396487400976
-+ Class '66' (keyboard) - AP: 0.666285433490228
-+ Class '67' (cell phone) - AP: 0.39604291665521263
-+ Class '68' (microwave) - AP: 0.6513813383527515
-+ Class '69' (oven) - AP: 0.47123458245272865
-+ Class '70' (toaster) - AP: 0.16233766233766234
-+ Class '71' (sink) - AP: 0.5156319792713111
-+ Class '72' (refrigerator) - AP: 0.6789637713049008
-+ Class '73' (book) - AP: 0.17113660724381471
-+ Class '74' (clock) - AP: 0.6829891045822087
-+ Class '75' (vase) - AP: 0.5165806131083865
-+ Class '76' (scissors) - AP: 0.3437987832196098
-+ Class '77' (teddy bear) - AP: 0.6072569060092936
-+ Class '78' (hair drier) - AP: 0.11363636363636365
-+ Class '79' (toothbrush) - AP: 0.2643722437438991
-mAP: 0.5210591495972852
-
-
-
-
-
----------------------------------------------------------------------------------------------------------------
-
-
-
-
-28484.0 29934.033 14762348.0 930971.0
-
-28734.0 29934.033 14762348.0 930971.0
-
-27423.0 29934.059 14762362.0 930971.0
-
-True Positive Rate is high ????????????????????????????????? Why?
-
-
-
-n
